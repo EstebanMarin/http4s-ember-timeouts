@@ -1,0 +1,16 @@
+{
+  "name": "scala-cli",
+  "argv": [
+    "/opt/homebrew/bin/scala-cli",
+    "bsp",
+    "--json-options",
+    "/Users/scala/mine/nix-scala-project/http4s-scala-cli/.scala-build/ide-options-v2.json",
+    "/Users/scala/mine/nix-scala-project/http4s-scala-cli"
+  ],
+  "version": "1.1.2",
+  "bspVersion": "2.1.0-M7",
+  "languages": [
+    "scala",
+    "java"
+  ]
+}

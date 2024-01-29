@@ -27,8 +27,8 @@ object Hello extends IOApp.Simple:
 
     def findCourse(id: UUID): Option[Course] =
       courses.get(id)
-    def findCourseByInstructor(instructor: Instructor): Option[Course] =
-      courses.values.find(_.instructor == instructor)
+    def findCourseByInstructor(instructor: Instructor): List[Course] =
+      courses.values.find(_.instructor == instructor).toList
 
   def run =
     for

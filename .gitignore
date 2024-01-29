@@ -1,6 +1,3 @@
-*.class
-*.log
-
 # sbt specific
 .target/
 .cache/
@@ -11,8 +8,10 @@
 .scala_dependencies
 .worksheet
 .bsp/
+.bsp
 .metals
-.bsp/
-.scala-build/
+.scala-build
+.scala-build/.bloop/
 .vscode/
 
+file.txt

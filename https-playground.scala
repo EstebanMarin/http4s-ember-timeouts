@@ -1,41 +1,33 @@
 //> using toolkit typelevel:0.1.21
 
 import cats.effect.*
-import java.util.UUID
-import cats.implicits.*
-import cats.syntax.*
+import io.circe.Decoder
+import fs2.Stream
+import fs2.io.file.*
+import org.http4s.ember.client.*
+import org.http4s.*
+import org.http4s.implicits.*
+import org.http4s.circe.*
 
-object Hello extends IOApp.Simple:
-  type Student = String
-  case class Instructor(name: String)
-  case class Course(
-      id: UUID,
-      name: String,
-      instructor: Instructor,
-      students: List[Student]
-  )
-  object CourseRepository:
-    val catsEffectCourse = Course(
-      UUID.fromString("93cc6b10-2964-4e61-b3cb-88a1fd12e619"),
-      "Cats Effect",
-      Instructor("John"),
-      List("Alice", "Bob")
-    )
-    private val courses = Map(
-      catsEffectCourse.id -> catsEffectCourse
-    )
+object Main extends IOApp.Simple:
+  case class Data(value: String)
+  given Decoder[Data] = Decoder.forProduct1("data")(Data.apply)
+  given EntityDecoder[IO, Data] = jsonOf[IO, Data]
 
-    def findCourse(id: UUID): Option[Course] =
-      courses.get(id)
-    def findCourseByInstructor(instructor: Instructor): List[Course] =
-      courses.values.find(_.instructor == instructor).toList
+  def run = EmberClientBuilder.default[IO].build.use { client =>
+    val request: Request[IO] =
+      Request(Method.POST, uri"https://httpbin.org/anything")
+        .withEntity("file.txt bunchofdata")
 
-  def run =
-    for
-      _ <- IO.println("Hello world!")
-      _ <- IO.println(
-        CourseRepository.findCourse(
-          UUID.fromString("93cc6b10-2964-4e61-b3cb-88a1fd12e619")
-        )
-      )
-    yield ()
+    client
+      .expect[Data](request)
+      .map(_.value.split(" "))
+      .flatMap { case Array(fileName, content) =>
+        IO.println(s"Writing data to $fileName") *>
+          Stream(content)
+            .through(fs2.text.utf8.encode)
+            .through(Files[IO].writeAll(Path(fileName)))
+            .compile
+            .drain
+      }
+  }
